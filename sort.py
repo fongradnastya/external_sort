@@ -2,20 +2,30 @@ from typing import Optional, Callable
 from file import File
 
 
-def my_sort(file_names, n_patns: int, output: Optional[str] = None, type_data="s",
+def my_sort(file_names, n_paths: int, output: Optional[str] = None, type_data="s",
             reverse: bool = False, key: Optional[Callable] = None,
             bsize: Optional[int] = None) -> None:
-    files = []
-    for file_name in file_names:
-        file = File(file_name, key=key, d_type=type_data)
-        files.append(file)
-    tapes = create_tapes(files[0], n_patns)
-    split_file(files[0], bsize, tapes[:n_patns])
+    if isinstance(file_names, str):
+        file = File(file_names, key=key, d_type=type_data)
+        sort_one_file(file, n_paths, reverse, bsize)
+    else:
+        files = []
+        for file_name in file_names:
+            file = File(file_name, key=key, d_type=type_data)
+            sort_one_file(file, n_paths, reverse, bsize)
+            files.append(file)
+        if output:
+            out_file = File(output, key=key, d_type=type_data)
+            merge_to_one(files, out_file)
+
+
+def sort_one_file(file, n_paths: int, reverse: bool = False,
+                  bsize: Optional[int] = None):
+    tapes = create_tapes(file, n_paths)
+    split_file(file, bsize, tapes[:n_paths])
     is_first = True
     merge_tapes(tapes, is_first, reverse)
     is_first = not is_first
-    if output:
-        out_file = File(output, key=key, d_type=type_data)
 
 
 def create_tapes(input_file: File, n_path):
@@ -129,3 +139,32 @@ def find_value_id(values, is_max):
             v_id = i
     return v_id
 
+
+def merge_to_one(files, out_file, is_reversed):
+    """
+    Сливает несколько отсортированных файлов в один общий файл
+    :param files:
+    :param out_file:
+    :param is_reversed:
+    :return:
+    """
+    is_read = list([False for _ in range(len(files))])
+    values = list(["" for _ in range(len(files))])
+    for file in files:
+        file.open_file("r")
+    out_file.clean()
+    out_file.open_file("w")
+    while True:
+        for i in range(len(files)):
+            if not files[i]:
+                values[i] = files[i].read_line()
+                if values[i]:
+                    is_read[i] = True
+                else:
+                    values[i] = None
+        written_id = find_value_id(values, is_reversed)
+        if written_id is not None:
+            out_file.write_line(str(values[written_id]) + "\n")
+            is_read[written_id] = False
+        else:
+            break
