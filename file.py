@@ -93,6 +93,7 @@ class File:
             self.open_file("r")
         if self._is_txt:
             line = self._read_txt_file()
+            line = self.validate(line)
         else:
             line = self._read_csv_line()
         return line
@@ -105,9 +106,11 @@ class File:
         """
         lines = []
         for i in range(n_lines):
-            line = self.read_line()
-            if not line:
-                break
+            line = ""
+            while line == "":
+                line = self.read_line()
+                if line is None:
+                    return lines
             lines.append(line)
         return lines
 
@@ -127,8 +130,6 @@ class File:
                 value = int(line)
             elif self._data_type == "f":
                 value = float(line)
-            elif self._data_type == "c":
-                value = chr(line)
             else:
                 raise ValueError("Wrong file data type")
             self._writer.writerow({self._key: value})
@@ -141,7 +142,7 @@ class File:
         if not self._file:
             self.open_file("a")
         for line in lines:
-            self.write_line(line)
+            self.write_line(str(line) + "\n")
 
     def close_file(self):
         """
@@ -169,14 +170,27 @@ class File:
         os.remove(self._path)
         self._path = None
 
-    def is_valid(self, line):
+    def validate(self, line):
         """
         Проверяет, является ли считанная строка корректной
         :param line: строка для проверки
         :return:
         """
-        line = line.replace(" ", "").replace("\t", "").replace("\n", "")
         if not line:
-            return False
+            return None
+        line = line.replace(" ", "").replace("\t", "").replace("\n", "").\
+            replace("\r", "")
+        if self._data_type == "s":
+            return line
         if self._data_type == "i":
-            pass
+            try:
+                val = int(line)
+            except:
+                return ""
+            return val
+        if self._data_type == "f":
+            try:
+                val = float(line)
+            except:
+                return ""
+            return val

@@ -2,14 +2,18 @@ from typing import Optional, Callable
 from file import File
 
 
-def my_sort(file_names: list, output: Optional[str] = None, type_data="s",
+def my_sort(file_names, n_patns: int, output: Optional[str] = None, type_data="s",
             reverse: bool = False, key: Optional[Callable] = None,
             bsize: Optional[int] = None) -> None:
     files = []
     for file_name in file_names:
         file = File(file_name, key=key, d_type=type_data)
         files.append(file)
-
+    tapes = create_tapes(files[0], n_patns)
+    split_file(files[0], bsize, tapes[:n_patns])
+    is_first = True
+    merge_tapes(tapes, is_first, reverse)
+    is_first = not is_first
     if output:
         out_file = File(output, key=key, d_type=type_data)
 
@@ -92,7 +96,7 @@ def merge_tapes(files, is_first, is_reversed=False):
                     values[i] = None
         written_id = find_value_id(values, is_reversed)
         if written_id is not None:
-            to_write[curr_id].write_line(str(values[written_id]))
+            to_write[curr_id].write_line(str(values[written_id]) + "\n")
             is_read[written_id] = False
             curr_id = curr_id + 1 if curr_id < n - 1 else 0
         else:

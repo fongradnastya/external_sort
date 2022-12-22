@@ -1,3 +1,5 @@
+import csv
+
 from file import File
 from sort import *
 
@@ -18,6 +20,4 @@ def generate_csv_input(file_name="input.csv", delimiter=","):
 
 
 if __name__ == "__main__":
-    new_file = File("inp.txt")
-    tapes = create_tapes(new_file, 2)
-    merge_tapes(tapes, is_first=True)
+    my_sort("inp.txt", 2, bsize=2)
