@@ -1,5 +1,5 @@
 from file import File
-from sort import split_file
+from sort import *
 
 
 def generate_csv_input(file_name="input.csv", delimiter=","):
@@ -19,9 +19,5 @@ def generate_csv_input(file_name="input.csv", delimiter=","):
 
 if __name__ == "__main__":
     new_file = File("inp.txt")
-    new_file.open_file("r")
-    line = new_file.read_n_lines(5)
-    out_1 = File("out1.txt")
-    out_2 = File("out2.txt")
-    split_file(new_file, 3, [out_1, out_2])
-    print(line)
+    tapes = create_tapes(new_file, 2)
+    merge_tapes(tapes, is_first=True)
