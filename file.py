@@ -22,6 +22,8 @@ class File:
         self._key = key
         self._file = None
         self._data_type = d_type
+        self._lines_cnt = 0
+        self.count_lines()
 
     @property
     def is_txt(self):
@@ -46,6 +48,9 @@ class File:
         :return: тип сортируемых значений
         """
         return self._data_type
+
+    def is_empty(self):
+        return self._lines_cnt == 0
 
     def create_file(self):
         """
@@ -125,6 +130,7 @@ class File:
             self.open_file("r")
         if self._is_txt:
             self._file.write(str(line))
+            self._lines_cnt += 1
         else:
             if self._data_type == "s":
                 value = str(line)
@@ -135,6 +141,7 @@ class File:
             else:
                 raise ValueError("Wrong file data type")
             self._writer.writerow({self._key: value})
+            self._lines_cnt += 1
 
     def write_n_lines(self, lines):
         """
@@ -145,6 +152,23 @@ class File:
             self.open_file("a")
         for line in lines:
             self.write_line(str(line) + "\n")
+
+    def count_lines(self):
+        """Метод для вычисления количества строк"""
+        if self._file is None:
+            self.open_file('r')
+        if self._is_txt:
+            for _ in self._file:
+                self._lines_cnt += 1
+        else:
+            for _ in self._reader:
+                self._lines_cnt += 1
+        self.close_file()
+
+    def copy_to(self, other: "File"):
+        other.clean()
+        other.open_file("w")
+        self.open_file("r")
 
     def close_file(self):
         """
@@ -163,6 +187,7 @@ class File:
         self.open_file("w")
         self.write_line("")
         self.close_file()
+        self._lines_cnt = 0
 
     def delete(self):
         """

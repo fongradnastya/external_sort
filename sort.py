@@ -9,6 +9,9 @@ def my_sort(file_names, n_paths: int, output: Optional[str] = None,
     if isinstance(file_names, str):
         file = File(file_names, key=key, d_type=type_data)
         sort_one_file(file, n_paths, reverse, bsize)
+        if output:
+            out_file = File(output, key=key, d_type=type_data)
+            file.copy_to(out_file)
     else:
         files = []
         for file_name in file_names:
@@ -18,13 +21,23 @@ def my_sort(file_names, n_paths: int, output: Optional[str] = None,
         if output:
             out_file = File(output, key=key, d_type=type_data)
             merge_to_one(files, out_file, reverse)
+        else:
+            if files[0].is_txt:
+                new_file = File("merged.txt", d_type=type_data)
+            else:
+                new_file = File("merged.csv", d_type=type_data, key=key)
+            merge_to_one(files, new_file, reverse)
 
 
 def sort_one_file(file, n_paths: int, reverse: bool = False,
                   bsize: Optional[int] = None):
     tapes = create_tapes(file, n_paths)
     split_file(file, bsize, tapes[:n_paths])
-    merge_tapes(tapes, reverse)
+    number = 1
+    file = None
+    while file is None:
+        file = merge_tapes(tapes, number, reverse)
+        number += 1
 
 
 def create_tapes(input_file: File, n_path):
@@ -62,9 +75,7 @@ def split_file(file, buff_size, tapes):
         data = file.read_n_lines(buff_size)
         tape = tapes[curr_id]
         tape.write_n_lines(data)
-        curr_id = curr_id + 1
-        if curr_id >= len(tapes):
-            curr_id = 0
+        curr_id = curr_id + 1 if curr_id >= len(tapes) else 0
         if len(data) < buff_size:
             break
     file.close_file()
@@ -78,16 +89,16 @@ def count_elem_quantity(number, n_files):
     return count_elem_quantity(number - 1, n_files) * n_files
 
 
-def merge_tapes(files, is_reversed=False):
+def merge_tapes(files, number, is_reversed=False):
     """
     Сливает первые n лент в другие n лент
     :param files:
+    :param number:
     :param is_reversed:
     :return:
     """
-    quantity = 1
     n = len(files) // 2
-    if quantity % 2 == 1:
+    if number % 2 == 1:
         to_read = files[:n]
         to_write = files[n:]
     else:
@@ -103,10 +114,14 @@ def merge_tapes(files, is_reversed=False):
     values = list(["" for _ in range(n)])
     counter = 0
     while curr_id < n:
-        curr_len = count_elem_quantity(quantity, n)
+        curr_len = count_elem_quantity(number, n)
         for i in range(n):
             if not is_read[i]:
                 values[i] = to_read[i].read_line()
+                if values[i] is None and len(to_read) > 2:
+                    del to_read[i]
+                    del values[i]
+                    del is_read[i]
                 is_read[i] = True
         written_id = find_value_id(values, is_reversed)
         if written_id is not None:
@@ -116,7 +131,6 @@ def merge_tapes(files, is_reversed=False):
                 counter += 1
             else:
                 counter = 0
-                quantity += 1
                 curr_id = curr_id + 1 if curr_id < n - 1 else 0
                 to_write[curr_id].write_line(str(values[written_id]) + "\n")
                 is_read[written_id] = False
@@ -124,8 +138,14 @@ def merge_tapes(files, is_reversed=False):
             break
     for file in to_read:
         file.close_file()
+    written = []
     for file in to_write:
         file.close_file()
+        if not file.is_empty():
+            written.append(file)
+    if len(written) == 1:
+        return written[0]
+    return None
 
 
 def find_value_id(values, is_max):
@@ -164,7 +184,7 @@ def merge_to_one(files, out_file, is_reversed):
     for file in files:
         file.open_file("r")
     out_file.clean()
-    out_file.open_file("w")
+    out_file.open_file("a")
     while True:
         for i in range(len(files)):
             if not files[i]:
