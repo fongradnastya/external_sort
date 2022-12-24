@@ -92,8 +92,10 @@ class File:
         if not self._file:
             self.open_file("r")
         if self._is_txt:
-            line = self._read_txt_file()
-            line = self.validate(line)
+            line = ""
+            while line == "":
+                line = self._read_txt_file()
+                line = self.validate(line)
         else:
             line = self._read_csv_line()
         return line
