@@ -173,6 +173,7 @@ class File:
         self.open_file("r")
         while (line := self.read_line()) is not None:
             other.write_line(line)
+        other.close_file()
 
     def close_file(self):
         """

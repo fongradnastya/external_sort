@@ -4,11 +4,10 @@ from file import File
 from sort import *
 
 
-def generate_csv_input(file_name="input.csv", delimiter=","):
+def generate_csv_input(file_name="input.csv"):
     """
     Генерация случайного входного csv файла
     :param file_name: имя файла
-    :param delimiter: разделитель между столбцами
     """
     from random import randint
     rows = list("abcd")
@@ -20,4 +19,5 @@ def generate_csv_input(file_name="input.csv", delimiter=","):
 
 
 if __name__ == "__main__":
-    my_sort("inp.txt", 2, bsize=2, output="out.txt")
+    # generate_csv_input()
+    my_sort("inp.txt", 2, bsize=2, type_data="i", output="out.txt")

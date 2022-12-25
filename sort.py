@@ -1,12 +1,22 @@
-from typing import Optional, Callable
+from typing import Optional
 from file import File
 from sys import getrecursionlimit
 
 
 def my_sort(file_names, n_paths: int = 3, output: Optional[str] = None,
             type_data="s", reverse: bool = False,
-            key: Optional[Callable] = None,
-            bsize: Optional[int] = 2) -> None:
+            key=None,bsize: Optional[int] = 2) -> None:
+    """
+
+    :param file_names:
+    :param n_paths:
+    :param output:
+    :param type_data:
+    :param reverse:
+    :param key:
+    :param bsize:
+    :return:
+    """
     if isinstance(file_names, str):
         inp_file = File(file_names, key=key, d_type=type_data)
 
@@ -95,7 +105,7 @@ def split_file(file, buff_size, tapes, cmp):
         print(data)
         tape = tapes[curr_id]
         tape.write_n_lines(data)
-        curr_id = curr_id + 1 if curr_id >= len(tapes) else 0
+        curr_id = curr_id + 1 if curr_id + 1 < len(tapes) else 0
         if len(data) < buff_size:
             break
     file.close_file()
@@ -115,7 +125,6 @@ def sort_buffer(buffer, cmp):
             arr[j + 1] = temp
 
     def merge_sort(arr: list, depth: int = 1) -> list:
-
         if (n_len := len(arr)) > 1:
             mid = n_len // 2
             left = arr[:mid]
@@ -177,15 +186,13 @@ def merge_tapes(files, number, buff_size, cmp):
     is_read = list([False for _ in range(n)])
     values = list(["" for _ in range(n)])
     counter = 0
+    curr_len = n ** number * buff_size
     while curr_id < n:
-        curr_len = n ** number * buff_size
         for i in range(n):
             if not is_read[i]:
                 values[i] = to_read[i].read_line()
-                if values[i] is None and len(to_read) > 2:
-                    del to_read[i]
-                    del values[i]
-                    del is_read[i]
+                if values[i] is not None:
+                    values[i] = int(values[i])
                 is_read[i] = True
         written_id = find_value_id(values, cmp)
         if written_id is not None:
@@ -194,10 +201,15 @@ def merge_tapes(files, number, buff_size, cmp):
                 is_read[written_id] = False
                 counter += 1
             else:
-                counter = 0
-                curr_id = curr_id + 1 if curr_id < n - 1 else 0
+                counter = 1
+                if curr_id + 1 < n:
+                    curr_id += 1
+                else:
+                    curr_id = 0
                 to_write[curr_id].write_line(str(values[written_id]))
                 is_read[written_id] = False
+            print(f"file {curr_id} value {str(values[written_id])}")
+            print(values)
         else:
             break
     for file in to_read:
@@ -222,16 +234,17 @@ def find_value_id(values, cmp):
     v_id = 0
     value = None
     for i in range(len(values)):
-        if values[i]:
+        if values[i] is not None:
             value = values[i]
             v_id = i
             break
-    if not value:
+    if value is None:
         return None
     for i in range(len(values)):
-        if values[i] and cmp(values[i], value):
-            value = values[i]
-            v_id = i
+        if values[i] is not None:
+            if cmp(values[i], value):
+                value = values[i]
+                v_id = i
     return v_id
 
 

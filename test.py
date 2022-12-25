@@ -8,7 +8,6 @@ import shutil
 from sort import *  # pylint: disable=E0401
 
 TEST_NUMBER = [
-    [],
     [1],
     [1, 2, 3, 4, 5],
     [0, 0, 0, 55, 55, 60],
@@ -68,6 +67,7 @@ class TestExternalSortOneFile(unittest.TestCase):
         """Тест функции сортировки числовых данных по возрастанию и txt
         файла."""
         for data in TEST_NUMBER:
+            self.setUp()
             with open(self.file_name, "w", encoding="utf-8") as ptr:
                 for item in data:
                     ptr.write(str(item) + "\n")
@@ -76,18 +76,23 @@ class TestExternalSortOneFile(unittest.TestCase):
                     self.file_name,
                     output="",
                     reverse=False,
-                    type_data="i"
+                    type_data="i",
+                    n_paths=2
                 )
                 exit_lst = []
+                self.setUp()
                 with open(self.file_name, "r", encoding="utf-8") as ptr:
                     for _ in range(len(data)):
-                        exit_lst.append(int(ptr.readline()))
+                        line = ptr.readline()
+                        if line:
+                            exit_lst.append(int(line))
                 self.assertEqual(exit_lst, sorted(data))
 
     def test_sort_number_decrease(self) -> None:
         """Тест функции сортировки числовых данных по не возрастанию
         и txt файла."""
         for data in TEST_NUMBER:
+            self.setUp()
             with open(self.file_name, "w", encoding="utf-8") as ptr:
                 for item in data:
                     ptr.write(str(item) + "\n")
@@ -99,6 +104,7 @@ class TestExternalSortOneFile(unittest.TestCase):
                     type_data="i",
                 )
                 exit_lst = []
+                self.setUp()
                 with open(self.file_name, "r", encoding="utf-8") as ptr:
                     for _ in range(len(data)):
                         exit_lst.append(int(ptr.readline()))
@@ -204,6 +210,7 @@ class TestExternalSortCSVFile(unittest.TestCase):
         """Тест функции сортировки csv файла"""
         key = "sort"
         for data in TEST_NUMBER:
+            self.setUp()
             file = open(self.file_name, "w", encoding="utf-8")
             file.write("")
             file.close()
@@ -219,8 +226,10 @@ class TestExternalSortCSVFile(unittest.TestCase):
                     output="",
                     reverse=False,
                     type_data="i",
+                    key=key,
                 )
                 exit_file = []
+                self.setUp()
                 ptr = open(self.file_name, "r", encoding="utf-8")
                 reader = csv.DictReader(ptr)
                 for _ in range(len(data)):
