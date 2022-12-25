@@ -65,18 +65,18 @@ class TestExternalSortOneFile(unittest.TestCase):
             open(self.file_name, "x", encoding="utf-8").close()
 
     def test_sort_number_increase(self) -> None:
-        """Тест функции сортировки числовых данных по возрастанию и txt файла."""
+        """Тест функции сортировки числовых данных по возрастанию и txt
+        файла."""
         for data in TEST_NUMBER:
             with open(self.file_name, "w", encoding="utf-8") as ptr:
                 for item in data:
                     ptr.write(str(item) + "\n")
             with self.subTest():
                 my_sort(
-                    src=[self.file_name],
+                    self.file_name,
                     output="",
                     reverse=False,
-                    key="",
-                    type_data="i",
+                    type_data="i"
                 )
                 exit_lst = []
                 with open(self.file_name, "r", encoding="utf-8") as ptr:
@@ -85,17 +85,17 @@ class TestExternalSortOneFile(unittest.TestCase):
                 self.assertEqual(exit_lst, sorted(data))
 
     def test_sort_number_decrease(self) -> None:
-        """Тест функции сортировки числовых данных по невозрастанию и txt файла."""
+        """Тест функции сортировки числовых данных по не возрастанию
+        и txt файла."""
         for data in TEST_NUMBER:
             with open(self.file_name, "w", encoding="utf-8") as ptr:
                 for item in data:
                     ptr.write(str(item) + "\n")
             with self.subTest():
                 my_sort(
-                    src=[self.file_name],
+                    self.file_name,
                     output="",
                     reverse=True,
-                    key="",
                     type_data="i",
                 )
                 exit_lst = []
@@ -105,17 +105,17 @@ class TestExternalSortOneFile(unittest.TestCase):
                 self.assertEqual(exit_lst, sorted(data, reverse=True))
 
     def test_sort_str_increase(self) -> None:
-        """Тест функции сортировки строковых данных по возрастанию и txt файла."""
+        """Тест функции сортировки строковых данных по возрастанию и
+        txt файла."""
         for data in TEST_STR:
             with open(self.file_name, "w", encoding="utf-8") as ptr:
                 for item in data:
                     ptr.write(item + "\n")
             with self.subTest():
                 my_sort(
-                    src=[self.file_name],
+                    self.file_name,
                     output="",
                     reverse=False,
-                    key="",
                     type_data="s",
                 )
                 exit_lst = []
@@ -125,17 +125,17 @@ class TestExternalSortOneFile(unittest.TestCase):
                 self.assertEqual(exit_lst, sorted(data, reverse=False))
 
     def test_sort_str_decrease(self) -> None:
-        """Тест функции сортировки строковых данных по невозрастанию и txt файла."""
+        """Тест функции сортировки строковых данных по не возрастанию и
+        txt файла."""
         for data in TEST_STR:
             with open(self.file_name, "w", encoding="utf-8") as ptr:
                 for item in data:
                     ptr.write(str(item) + "\n")
             with self.subTest():
                 my_sort(
-                    src=[self.file_name],
+                    self.file_name,
                     output="",
                     reverse=True,
-                    key="",
                     type_data="s",
                 )
                 exit_lst = []
@@ -152,10 +152,9 @@ class TestExternalSortOneFile(unittest.TestCase):
                     ptr.write(str(item) + "\n")
             with self.subTest():
                 my_sort(
-                    src=[self.file_name],
+                    self.file_name,
                     output="",
                     reverse=False,
-                    key="",
                     type_data="f",
                 )
                 exit_lst = []
@@ -165,17 +164,17 @@ class TestExternalSortOneFile(unittest.TestCase):
                 self.assertEqual(exit_lst, sorted(data, reverse=False))
 
     def test_sort_float_decrease(self) -> None:
-        """Тест функции сортировки чисел с плавающей точкой по невозрастанию."""
+        """Тест функции сортировки чисел с плавающей точкой по
+        не возрастанию."""
         for data in TEST_FLOAT:
             with open(self.file_name, "w", encoding="utf-8") as ptr:
                 for item in data:
                     ptr.write(str(item) + "\n")
             with self.subTest():
                 my_sort(
-                    src=[self.file_name],
+                    self.file_name,
                     output="",
                     reverse=True,
-                    key="",
                     type_data="f",
                 )
                 exit_lst = []
@@ -183,7 +182,6 @@ class TestExternalSortOneFile(unittest.TestCase):
                     for _ in range(len(data)):
                         exit_lst.append(float(ptr.readline()))
                 self.assertEqual(exit_lst, sorted(data, reverse=True))
-
 
     def tearDown(self) -> None:
         """Действия после окончания теста."""
@@ -217,10 +215,9 @@ class TestExternalSortCSVFile(unittest.TestCase):
             ptr.close()
             with self.subTest():
                 my_sort(
-                    src=[self.file_name],
+                    self.file_name,
                     output="",
                     reverse=False,
-                    key=key,
                     type_data="i",
                 )
                 exit_file = []
@@ -235,8 +232,9 @@ class TestExternalSortCSVFile(unittest.TestCase):
         """Действия после окончания теста."""
         shutil.rmtree(self.dir_name)
 
+
 class TestExternalSortTwoFile(unittest.TestCase):
-    """Тест-кейс модуля my_sort c двумя файлами."""
+    """Тест-кейс модуля my_sort с двумя файлами."""
 
     def setUp(self) -> None:
         """Создание файлов перед тестом."""
@@ -262,10 +260,9 @@ class TestExternalSortTwoFile(unittest.TestCase):
             with self.subTest():
                 data = [sorted(data[0]), ] + [sorted(data[1]), ]
                 my_sort(
-                    src=[self.file_name_first, self.file_name_second],
+                    file_names=[self.file_name_first, self.file_name_second],
                     output="",
                     reverse=False,
-                    key="",
                     type_data="i",
                 )
                 exit_lst_first, exit_lst_second = [], []
@@ -300,10 +297,9 @@ class TestExternalSortTwoFile(unittest.TestCase):
             with self.subTest():
                 data = sorted(data[0] + data[1])
                 my_sort(
-                    src=[self.file_name_first, self.file_name_second],
+                    file_names=[self.file_name_first, self.file_name_second],
                     output=output,
                     reverse=False,
-                    key="",
                     type_data="i",
                 )
                 output_file = []

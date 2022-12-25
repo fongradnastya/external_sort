@@ -13,7 +13,7 @@ def generate_csv_input(file_name="input.csv", delimiter=","):
     from random import randint
     rows = list("abcd")
     with open(file_name, "w", newline="") as file:
-        writer = csv.DictWriter(file, rows, delimiter=delimiter)
+        writer = csv.DictWriter(file, rows, delimiter=",")
         writer.writeheader()
         for _ in range(200):
             writer.writerow({row: randint(-100, 1000) for row in rows})

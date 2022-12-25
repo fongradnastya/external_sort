@@ -3,16 +3,18 @@ from file import File
 from sys import getrecursionlimit
 
 
-def my_sort(file_names, n_paths: int, output: Optional[str] = None,
+def my_sort(file_names, n_paths: int = 3, output: Optional[str] = None,
             type_data="s", reverse: bool = False,
             key: Optional[Callable] = None,
-            bsize: Optional[int] = None) -> None:
+            bsize: Optional[int] = 2) -> None:
     if isinstance(file_names, str):
         inp_file = File(file_names, key=key, d_type=type_data)
-        if inp_file.is_txt:
-            cmp = lambda val1, val2: val1 > val2 == reverse
-        else:
-            cmp = lambda val1, val2: val1[key] > val2[key] == reverse
+
+        def cmp(val1, val2):
+            if inp_file.is_txt:
+                return val1 > val2 if reverse else val1 < val2
+            return val1[key] > val2[key] if reverse else val1[key] < val2[key]
+
         new_file = sort_one_file(inp_file, n_paths, cmp, bsize)
         print(new_file)
         if output:
@@ -79,7 +81,7 @@ def split_file(file, buff_size, tapes, cmp):
     :param file:
     :param buff_size:
     :param tapes:
-    :param reverse
+    :param cmp
     :return:
     """
     curr_id = 0
@@ -155,7 +157,8 @@ def merge_tapes(files, number, buff_size, cmp):
     Сливает первые n лент в другие n лент
     :param files:
     :param number:
-    :param is_reversed:
+    :param buff_size:
+    :param cmp:
     :return:
     """
     n = len(files) // 2
@@ -213,7 +216,7 @@ def find_value_id(values, cmp):
     """
     Ищет индекс следующего элемента для записи
     :param values:
-    :param is_max:
+    :param cmp:
     :return:
     """
     v_id = 0
