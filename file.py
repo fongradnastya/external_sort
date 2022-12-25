@@ -121,15 +121,17 @@ class File:
             lines.append(line)
         return lines
 
-    def write_line(self, line):
+    def write_line(self, line, new_line=True):
         """
         Запись строки в файл
         :param line: значение для записи
+        :param new_line
         """
         if not self._file:
             self.open_file("r")
         if self._is_txt:
-            self._file.write(str(line))
+            string = str(line) + "\n" if new_line else str(line)
+            self._file.write(string)
             self._lines_cnt += 1
         else:
             if self._data_type == "s":
@@ -151,7 +153,7 @@ class File:
         if not self._file:
             self.open_file("a")
         for line in lines:
-            self.write_line(str(line) + "\n")
+            self.write_line(line)
 
     def count_lines(self):
         """Метод для вычисления количества строк"""
@@ -169,6 +171,8 @@ class File:
         other.clean()
         other.open_file("w")
         self.open_file("r")
+        while (line := self.read_line()) is not None:
+            other.write_line(line)
 
     def close_file(self):
         """
@@ -185,7 +189,7 @@ class File:
         Очищает содержимое файла
         """
         self.open_file("w")
-        self.write_line("")
+        self.write_line("", new_line=False)
         self.close_file()
         self._lines_cnt = 0
 
@@ -221,3 +225,6 @@ class File:
             except:
                 return ""
             return val
+
+    def __str__(self):
+        return self._path
