@@ -77,7 +77,7 @@ def create_tapes(input_file: File, n_path):
     files = []
     for i in range(1, n_path * 2 + 1):
         if input_file.is_txt:
-            new_file = File(f"temp{i}.txt")
+            new_file = File(f"temp{i}.txt", d_type=input_file.data_type)
         else:
             new_file = File(f"temp{i}.csv", key=input_file.key,
                             d_type=input_file.data_type)
@@ -183,35 +183,37 @@ def merge_tapes(files, number, buff_size, cmp):
         file.clean()
         file.open_file("a")
     curr_id = 0
-    is_read = list([False for _ in range(n)])
-    values = list(["" for _ in range(n)])
-    counter = 0
-    curr_len = n ** number * buff_size
     while curr_id < n:
-        for i in range(n):
-            if not is_read[i]:
-                values[i] = to_read[i].read_line()
-                if values[i] is not None:
-                    values[i] = int(values[i])
-                is_read[i] = True
-        written_id = find_value_id(values, cmp)
-        if written_id is not None:
-            if counter < curr_len:
+        is_read = list([False for _ in range(n)])
+        values = list(["" for _ in range(n)])
+        curr_len = n ** number * buff_size
+        counters = list([0 for _ in range(n)])
+        while True:
+            end = False
+            for cnt in counters:
+                if cnt > curr_len:
+                    end = True
+            if end:
+                break
+            for i in range(n):
+                if not is_read[i] and counters[i] < curr_len:
+                    values[i] = to_read[i].read_line()
+                    is_read[i] = True
+                    counters[i] += 1
+            written_id = find_value_id(values, cmp)
+            if written_id is not None:
                 to_write[curr_id].write_line(str(values[written_id]))
                 is_read[written_id] = False
-                counter += 1
+                print(f"file {curr_id} value {str(values[written_id])}")
+                print(values)
+                values[written_id] = None
             else:
-                counter = 1
-                if curr_id + 1 < n:
-                    curr_id += 1
-                else:
-                    curr_id = 0
-                to_write[curr_id].write_line(str(values[written_id]))
-                is_read[written_id] = False
-            print(f"file {curr_id} value {str(values[written_id])}")
-            print(values)
-        else:
+                break
+        curr_id = curr_id + 1 if curr_id + 1 < n else 0
+        quantity = sum(counters)
+        if quantity < curr_len * n:
             break
+
     for file in to_read:
         file.close_file()
     written = []
