@@ -8,13 +8,13 @@ def my_sort(file_names, n_paths: int = 3, output: Optional[str] = None,
             key=None, bsize: Optional[int] = 2) -> None:
     """
 
-    :param file_names:
-    :param n_paths:
-    :param output:
-    :param type_data:
-    :param reverse:
-    :param key:
-    :param bsize:
+    :param file_names: имена сортируемых файлов
+    :param n_paths: количество путей сортировки
+    :param output: выходной файл
+    :param type_data: тип сортируемых значений
+    :param reverse: следует ли сортировать в обратном порядке
+    :param key: ключ для сравнения значений из csv файла
+    :param bsize: размер буфера памяти
     :return:
     """
     if isinstance(file_names, str):
@@ -31,7 +31,6 @@ def my_sort(file_names, n_paths: int = 3, output: Optional[str] = None,
             new_file.copy_to(inp_file)
         new_file.delete()
     else:
-
         files = []
         for file_name in file_names:
             file = File(file_name, key=key, d_type=type_data)
@@ -42,28 +41,36 @@ def my_sort(file_names, n_paths: int = 3, output: Optional[str] = None,
                 return val1 > val2 if reverse else val1 < val2
             return val1[key] > val2[key] if reverse else val1[key] < val2[key]
 
-        sorted_files = []
-        for file in files:
-            sorted_file = sort_one_file(file, n_paths, cmp, bsize)
-            sorted_files.append(sorted_file)
-
+        for i in range(len(files)):
+            sorted_file = sort_one_file(files[i], n_paths, cmp, bsize)
+            if sorted_file is not files[i]:
+                sorted_file.copy_to(files[i])
+                sorted_file.delete()
         if output:
             out_file = File(output, key=key, d_type=type_data)
             merge_to_one(files, out_file, cmp)
+            out_file.close_file()
         else:
             if files[0].is_txt:
                 new_file = File("merged.txt", d_type=type_data)
             else:
                 new_file = File("merged.csv", d_type=type_data, key=key)
             merge_to_one(files, new_file, cmp)
+            new_file.close_file()
         for file in files:
             file.close_file()
-        for file in sorted_files:
-            file.delete()
 
 
 def sort_one_file(file, n_paths: int, cmp,
                   bsize: Optional[int] = None):
+    """
+    Выполняет сортировку 1 файла
+    :param file:
+    :param n_paths:
+    :param cmp:
+    :param bsize:
+    :return:
+    """
     tapes = create_tapes(file, n_paths)
     if file.is_empty():
         return file
@@ -82,9 +89,9 @@ def sort_one_file(file, n_paths: int, cmp,
 def create_tapes(input_file: File, n_path):
     """
     Создаёт вспомогательные сортировочные файлы
-    :param input_file:
-    :param n_path:
-    :return:
+    :param input_file: входной файл
+    :param n_path: количество путей у сортировки
+    :return: список созданных вспомогательных файлов
     """
     files = []
     for i in range(1, n_path * 2 + 1):
@@ -100,10 +107,10 @@ def create_tapes(input_file: File, n_path):
 def split_file(file, buff_size, tapes, cmp):
     """
     Разделяет входной файл на n различных файлов
-    :param file:
-    :param buff_size:
-    :param tapes:
-    :param cmp
+    :param file: файл для разделения
+    :param buff_size: размер буфера памяти
+    :param tapes: список файлов для записи значений
+    :param cmp: функция-компаратор
     :return:
     """
     curr_id = 0
@@ -126,6 +133,12 @@ def split_file(file, buff_size, tapes, cmp):
 
 
 def sort_buffer(buffer, cmp):
+    """
+    Внутренняя сортировка значений из буфера
+    :param buffer: список сортируемых значений
+    :param cmp: функция-компаратор
+    :return: отсортированный список
+    """
 
     def insertion_sort(arr):
         for i in range(1, len(arr)):
@@ -176,11 +189,11 @@ def sort_buffer(buffer, cmp):
 def merge_tapes(files, number, buff_size, cmp):
     """
     Сливает первые n лент в другие n лент
-    :param files:
-    :param number:
-    :param buff_size:
-    :param cmp:
-    :return:
+    :param files: список всех временных файлов
+    :param number: номер текущего слияния
+    :param buff_size: размер буфера памяти
+    :param cmp: функция-компаратор
+    :return: отсортированный файл или None
     """
     n = len(files) // 2
     if number % 2 == 0:
@@ -243,8 +256,8 @@ def merge_tapes(files, number, buff_size, cmp):
 def find_value_id(values, cmp):
     """
     Ищет индекс следующего элемента для записи
-    :param values:
-    :param cmp:
+    :param values: список значений
+    :param cmp: функция-компаратор для поиска минимума или максимума
     :return:
     """
     v_id = 0
@@ -268,15 +281,16 @@ def find_value_id(values, cmp):
 def merge_to_one(files, out_file, cmp):
     """
     Сливает несколько отсортированных файлов в один общий файл
-    :param files:
-    :param out_file:
-    :param cmp:
+    :param files: отсортированные файлы
+    :param out_file: файл для записи результата
+    :param cmp: функция-компаратор
     :return:
     """
     is_read = list([False for _ in range(len(files))])
     values = list(["" for _ in range(len(files))])
     for file in files:
-        file.open_file("r")
+        if file:
+            file.open_file("r")
     out_file.clean()
     out_file.open_file("a")
     while True:
@@ -286,7 +300,7 @@ def merge_to_one(files, out_file, cmp):
                 is_read[i] = True
         written_id = find_value_id(values, cmp)
         if written_id is not None:
-            out_file.write_line(str(values[written_id]) + "\n")
+            out_file.write_line(str(values[written_id]))
             is_read[written_id] = False
         else:
             break
