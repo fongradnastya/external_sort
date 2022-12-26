@@ -5,7 +5,7 @@ from sys import getrecursionlimit
 
 def my_sort(file_names, n_paths: int = 3, output: Optional[str] = None,
             type_data="s", reverse: bool = False,
-            key=None,bsize: Optional[int] = 2) -> None:
+            key=None, bsize: Optional[int] = 2) -> None:
     """
 
     :param file_names:
@@ -18,15 +18,12 @@ def my_sort(file_names, n_paths: int = 3, output: Optional[str] = None,
     :return:
     """
     if isinstance(file_names, str):
-        inp_file = File(file_names, key=key, d_type=type_data)
-
         def cmp(val1, val2):
             if inp_file.is_txt:
                 return val1 > val2 if reverse else val1 < val2
             return val1[key] > val2[key] if reverse else val1[key] < val2[key]
-
+        inp_file = File(file_names, key=key, d_type=type_data)
         new_file = sort_one_file(inp_file, n_paths, cmp, bsize)
-        print(new_file)
         if output:
             out_file = File(output, key=key, d_type=type_data)
             new_file.copy_to(out_file)
@@ -34,27 +31,42 @@ def my_sort(file_names, n_paths: int = 3, output: Optional[str] = None,
             new_file.copy_to(inp_file)
         new_file.delete()
     else:
+
         files = []
         for file_name in file_names:
             file = File(file_name, key=key, d_type=type_data)
-            sorted_file = sort_one_file(file, n_paths, reverse, bsize)
-            files.append(sorted_file)
+            files.append(file)
+
+        def cmp(val1, val2):
+            if files[0].is_txt:
+                return val1 > val2 if reverse else val1 < val2
+            return val1[key] > val2[key] if reverse else val1[key] < val2[key]
+
+        sorted_files = []
+        for file in files:
+            sorted_file = sort_one_file(file, n_paths, cmp, bsize)
+            sorted_files.append(sorted_file)
+
         if output:
             out_file = File(output, key=key, d_type=type_data)
-            merge_to_one(files, out_file, reverse)
+            merge_to_one(files, out_file, cmp)
         else:
             if files[0].is_txt:
                 new_file = File("merged.txt", d_type=type_data)
             else:
                 new_file = File("merged.csv", d_type=type_data, key=key)
-            merge_to_one(files, new_file, reverse)
+            merge_to_one(files, new_file, cmp)
         for file in files:
+            file.close_file()
+        for file in sorted_files:
             file.delete()
 
 
 def sort_one_file(file, n_paths: int, cmp,
                   bsize: Optional[int] = None):
     tapes = create_tapes(file, n_paths)
+    if file.is_empty():
+        return file
     split_file(file, bsize, tapes[:n_paths], cmp)
     number = 0
     file = None
@@ -223,6 +235,8 @@ def merge_tapes(files, number, buff_size, cmp):
             written.append(file)
     if len(written) == 1:
         return written[0]
+    elif len(written) == 0:
+        return to_write[0]
     return None
 
 
@@ -244,18 +258,19 @@ def find_value_id(values, cmp):
         return None
     for i in range(len(values)):
         if values[i] is not None:
+            print(values[i], value)
             if cmp(values[i], value):
                 value = values[i]
                 v_id = i
     return v_id
 
 
-def merge_to_one(files, out_file, is_reversed):
+def merge_to_one(files, out_file, cmp):
     """
     Сливает несколько отсортированных файлов в один общий файл
     :param files:
     :param out_file:
-    :param is_reversed:
+    :param cmp:
     :return:
     """
     is_read = list([False for _ in range(len(files))])
@@ -266,13 +281,10 @@ def merge_to_one(files, out_file, is_reversed):
     out_file.open_file("a")
     while True:
         for i in range(len(files)):
-            if not files[i]:
+            if not is_read[i]:
                 values[i] = files[i].read_line()
-                if values[i]:
-                    is_read[i] = True
-                else:
-                    values[i] = None
-        written_id = find_value_id(values, is_reversed)
+                is_read[i] = True
+        written_id = find_value_id(values, cmp)
         if written_id is not None:
             out_file.write_line(str(values[written_id]) + "\n")
             is_read[written_id] = False

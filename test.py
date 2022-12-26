@@ -8,6 +8,7 @@ import shutil
 from sort import *  # pylint: disable=E0401
 
 TEST_NUMBER = [
+    [],
     [1],
     [1, 2, 3, 4, 5],
     [0, 0, 0, 55, 55, 60],
@@ -18,16 +19,17 @@ TEST_NUMBER = [
 ]
 
 TEST_STR = [
+    [""],
     ["a"],
     ["a", "b", "c", "d", "e"],
     ["aa", "aa", "aa", "ab", "ac", "b"],
     ["e", "d", "c", "b", "a"],
     ["abc", "a", "foo", "bar", "booz", "baz", "spam", "love"],
     ["abc", "abc", "abc"],
-    [""],
 ]
 
 TEST_FLOAT = [
+    [],
     [1.0],
     [1.0, 2.0, 3.0, 4.0, 5.0],
     [0.0, 0.0, 0.0, 55.0, 55.0, 60.0],
@@ -38,7 +40,6 @@ TEST_FLOAT = [
 ]
 
 TEST_MORE_TXT = [
-    [[], []],
     [[1], [-1000]],
     [[1, 2], [3, 4, 5]],
     [[0, 0, 0], [55, 55, 60]],
@@ -112,6 +113,7 @@ class TestExternalSortOneFile(unittest.TestCase):
         """Тест функции сортировки строковых данных по возрастанию и
         txt файла."""
         for data in TEST_STR:
+            self.setUp()
             with open(self.file_name, "w", encoding="utf-8") as ptr:
                 for item in data:
                     ptr.write(item + "\n")
@@ -123,6 +125,7 @@ class TestExternalSortOneFile(unittest.TestCase):
                     type_data="s",
                 )
                 exit_lst = []
+                self.setUp()
                 with open(self.file_name, "r", encoding="utf-8") as ptr:
                     for _ in range(len(data)):
                         exit_lst.append(ptr.readline().replace("\n", ""))
@@ -132,6 +135,7 @@ class TestExternalSortOneFile(unittest.TestCase):
         """Тест функции сортировки строковых данных по не возрастанию и
         txt файла."""
         for data in TEST_STR:
+            self.setUp()
             with open(self.file_name, "w", encoding="utf-8") as ptr:
                 for item in data:
                     ptr.write(str(item) + "\n")
@@ -143,6 +147,7 @@ class TestExternalSortOneFile(unittest.TestCase):
                     type_data="s",
                 )
                 exit_lst = []
+                self.setUp()
                 with open(self.file_name, "r", encoding="utf-8") as ptr:
                     for _ in range(len(data)):
                         exit_lst.append(ptr.readline().replace("\n", ""))
@@ -151,6 +156,7 @@ class TestExternalSortOneFile(unittest.TestCase):
     def test_sort_float_increase(self) -> None:
         """Тест функции сортировки чисел с плавающей точкой по возрастанию."""
         for data in TEST_FLOAT:
+            self.setUp()
             with open(self.file_name, "w", encoding="utf-8") as ptr:
                 for item in data:
                     ptr.write(str(item) + "\n")
@@ -162,6 +168,7 @@ class TestExternalSortOneFile(unittest.TestCase):
                     type_data="f",
                 )
                 exit_lst = []
+                self.setUp()
                 with open(self.file_name, "r", encoding="utf-8") as ptr:
                     for _ in range(len(data)):
                         exit_lst.append(float(ptr.readline()))
@@ -171,6 +178,7 @@ class TestExternalSortOneFile(unittest.TestCase):
         """Тест функции сортировки чисел с плавающей точкой по
         не возрастанию."""
         for data in TEST_FLOAT:
+            self.setUp()
             with open(self.file_name, "w", encoding="utf-8") as ptr:
                 for item in data:
                     ptr.write(str(item) + "\n")
@@ -182,6 +190,7 @@ class TestExternalSortOneFile(unittest.TestCase):
                     type_data="f",
                 )
                 exit_lst = []
+                self.setUp()
                 with open(self.file_name, "r", encoding="utf-8") as ptr:
                     for _ in range(len(data)):
                         exit_lst.append(float(ptr.readline()))
@@ -258,6 +267,7 @@ class TestExternalSortTwoFile(unittest.TestCase):
     def test_sort_more_txt_files(self) -> None:
         """Тест функции сортировки нескольких txt файлов"""
         for data in TEST_MORE_TXT:
+            self.setUp()
             with open(self.file_name_first, "w", encoding="utf-8") as ptr:
                 for item in data[0]:
                     ptr.write(str(item) + "\n")
@@ -274,11 +284,13 @@ class TestExternalSortTwoFile(unittest.TestCase):
                 )
                 exit_lst_first, exit_lst_second = [], []
                 first_flag, second_flag = True, True
+                self.setUp()
                 with open(self.file_name_first, "r", encoding="utf-8") as ptr:
                     for i in range(len(data[0])):
                         exit_lst_first.append(int(ptr.readline()))
                         if data[0][i] != exit_lst_first[i]:
                             first_flag = False
+                self.setUp()
                 with open(self.file_name_second, "r", encoding="utf-8") as ptr:
                     for i in range(len(data[1])):
                         exit_lst_second.append(int(ptr.readline()))

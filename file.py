@@ -97,10 +97,8 @@ class File:
         if not self._file:
             self.open_file("r")
         if self._is_txt:
-            line = ""
-            while line == "":
-                line = self._read_txt_file()
-                line = self.validate(line)
+            line = self._read_txt_file()
+            line = self.validate(line)
         else:
             line = self._read_csv_line()
         return line
@@ -190,7 +188,8 @@ class File:
         Очищает содержимое файла
         """
         self.open_file("w")
-        self.write_line("", new_line=False)
+        if self._is_txt:
+            self.write_line("", new_line=False)
         self.close_file()
         self._lines_cnt = 0
 
@@ -208,10 +207,10 @@ class File:
         :param line: строка для проверки
         :return:
         """
-        if not line:
-            return None
         line = line.replace(" ", "").replace("\t", "").replace("\n", "").\
             replace("\r", "")
+        if not line:
+            return None
         if self._data_type == "s":
             return line
         if self._data_type == "i":
