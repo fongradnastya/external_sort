@@ -20,4 +20,4 @@ def generate_csv_input(file_name="input.csv"):
 
 if __name__ == "__main__":
     # generate_csv_input()
-    my_sort(["inp.txt", "out.txt"], 2, bsize=2, type_data="i", output="output.txt")
+    my_sort("input.csv", 2, bsize=2, type_data="i", key="a")

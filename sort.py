@@ -94,13 +94,17 @@ def create_tapes(input_file: File, n_path):
     :return: список созданных вспомогательных файлов
     """
     files = []
+    input_file.open_file("r")
     for i in range(1, n_path * 2 + 1):
+
         if input_file.is_txt:
             new_file = File(f"temp{i}.txt", d_type=input_file.data_type)
         else:
             new_file = File(f"temp{i}.csv", key=input_file.key,
-                            d_type=input_file.data_type)
+                            d_type=input_file.data_type,
+                            header=input_file.header)
         files.append(new_file)
+    input_file.close_file()
     return files
 
 
@@ -121,7 +125,6 @@ def split_file(file, buff_size, tapes, cmp):
     while curr_id < len(tapes):
         data = file.read_n_lines(buff_size)
         data = sort_buffer(data, cmp)
-        print(data)
         tape = tapes[curr_id]
         tape.write_n_lines(data)
         curr_id = curr_id + 1 if curr_id + 1 < len(tapes) else 0
@@ -227,10 +230,8 @@ def merge_tapes(files, number, buff_size, cmp):
                     counters[i] += 1
             written_id = find_value_id(values, cmp)
             if written_id is not None:
-                to_write[curr_id].write_line(str(values[written_id]))
+                to_write[curr_id].write_line(values[written_id])
                 is_read[written_id] = False
-                print(f"file {curr_id} value {str(values[written_id])}")
-                print(values)
                 values[written_id] = None
             else:
                 break
@@ -271,7 +272,6 @@ def find_value_id(values, cmp):
         return None
     for i in range(len(values)):
         if values[i] is not None:
-            print(values[i], value)
             if cmp(values[i], value):
                 value = values[i]
                 v_id = i
@@ -300,7 +300,7 @@ def merge_to_one(files, out_file, cmp):
                 is_read[i] = True
         written_id = find_value_id(values, cmp)
         if written_id is not None:
-            out_file.write_line(str(values[written_id]))
+            out_file.write_line(values[written_id])
             is_read[written_id] = False
         else:
             break

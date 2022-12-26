@@ -7,7 +7,7 @@ class File:
     """
     Класс для работы с txt и csv файлами
     """
-    def __init__(self, path, d_type="s", key=None):
+    def __init__(self, path, d_type="s", key=None, header=None):
         """
         Создаёт новый экземпляр файла
         :param path:
@@ -24,6 +24,7 @@ class File:
         self._data_type = d_type
         self._lines_cnt = 0
         self.count_lines()
+        self._header = header
 
     @property
     def is_txt(self):
@@ -49,6 +50,10 @@ class File:
         """
         return self._data_type
 
+    @property
+    def header(self):
+        return self._header
+
     def is_empty(self):
         return self._lines_cnt == 0
 
@@ -71,15 +76,22 @@ class File:
         if not self._is_txt:
             if mode in ("w", "a"):
                 self._writer = csv.DictWriter(self._file,
-                                              fieldnames=[self._key])
+                                              fieldnames=self._header)
+                if mode == "w":
+                    self._writer.writeheader()
             elif mode == "r":
                 self._reader = csv.DictReader(self._file)
+                self._header = self._reader.fieldnames
+                if not self._key:
+                    self._key = self._header[0]
 
     def _read_csv_line(self):
         if not self._reader:
             raise UnsupportedOperation("This file is not readable")
         try:
-            return next(self._reader)[self._key]
+            res = next(self._reader)
+            res[self._key] = self.validate(res[self._key])
+            return res
         except StopIteration:
             return None
 
@@ -132,15 +144,7 @@ class File:
             self._file.write(string)
             self._lines_cnt += 1
         else:
-            if self._data_type == "s":
-                value = str(line)
-            elif self._data_type == "i":
-                value = int(line)
-            elif self._data_type == "f":
-                value = float(line)
-            else:
-                raise ValueError("Wrong file data type")
-            self._writer.writerow({self._key: value})
+            self._writer.writerow(line)
             self._lines_cnt += 1
 
     def write_n_lines(self, lines):
