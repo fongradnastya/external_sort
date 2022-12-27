@@ -52,9 +52,17 @@ class File:
 
     @property
     def header(self):
+        """
+        Геттер для заголовка csv файла
+        :return: заголовок файла
+        """
         return self._header
 
     def is_empty(self):
+        """
+        Проверяет файл на пустоту
+        :return: является ли файл пустым
+        """
         return self._lines_cnt == 0
 
     def create_file(self):
@@ -86,6 +94,10 @@ class File:
                     self._key = self._header[0]
 
     def _read_csv_line(self):
+        """
+        Считывание строки из txt файла
+        :return: считанная строка
+        """
         if not self._reader:
             raise UnsupportedOperation("This file is not readable")
         try:
@@ -96,6 +108,10 @@ class File:
             return None
 
     def _read_txt_file(self):
+        """
+        Считывание строки из текстового файла
+        :return: считанная строка
+        """
         try:
             return self._file.readline()
         except StopIteration:
@@ -170,6 +186,11 @@ class File:
         self.close_file()
 
     def copy_to(self, other: "File"):
+        """
+        Копирует содержимое файла в новый файл
+        :param other: файл, в который будет производиться копирование
+        :return:
+        """
         other.clean()
         other.open_file("w")
         self.open_file("r")
@@ -220,15 +241,22 @@ class File:
         if self._data_type == "i":
             try:
                 val = int(line)
-            except:
-                return ""
+            except ValueError as ex:
+                print(ex, "wrong data type")
+                val = ""
             return val
         if self._data_type == "f":
             try:
                 val = float(line)
-            except:
-                return ""
+            except ValueError as ex:
+                print(ex, "wrong data type")
+                val = ""
             return val
 
     def __str__(self):
+        """Получение строкового представления файла"""
+        return self._path
+
+    def __repr__(self):
+        """Получение строкового представления файла"""
         return self._path

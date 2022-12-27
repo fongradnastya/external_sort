@@ -144,6 +144,7 @@ def sort_buffer(buffer, cmp):
     """
 
     def insertion_sort(arr):
+        """Сортировка вставками"""
         for i in range(1, len(arr)):
             temp = arr[i]
             j = i - 1
@@ -153,6 +154,7 @@ def sort_buffer(buffer, cmp):
             arr[j + 1] = temp
 
     def merge_sort(arr: list, depth: int = 1) -> list:
+        """Сортировка слиянием"""
         if (n_len := len(arr)) > 1:
             mid = n_len // 2
             left = arr[:mid]
@@ -163,9 +165,7 @@ def sort_buffer(buffer, cmp):
             else:
                 merge_sort(left, depth + 1)
                 merge_sort(right, depth + 1)
-
             i = j = k = 0
-
             while i < len(left) and j < len(right):
                 if cmp(left[i], right[j]):
                     arr[k] = left[i]
@@ -174,12 +174,10 @@ def sort_buffer(buffer, cmp):
                     arr[k] = right[j]
                     j += 1
                 k += 1
-
             while j < len(right):
                 arr[k] = right[j]
                 j += 1
                 k += 1
-
             while i < len(left):
                 arr[k] = left[i]
                 i += 1
